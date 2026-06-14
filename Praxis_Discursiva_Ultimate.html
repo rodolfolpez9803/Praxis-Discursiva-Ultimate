@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praxis Discursiva Challenge Ultimate</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Arial,sans-serif}
+body{background:linear-gradient(135deg,#0f172a,#2563eb);color:#fff;min-height:100vh;padding:20px}
+.container{max-width:1000px;margin:auto;background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:24px;border-radius:20px}
+h1{text-align:center}
+.subtitle{text-align:center;margin:8px 0 20px;opacity:.9}
+.top{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.card{background:rgba(255,255,255,.1);padding:12px;border-radius:12px;flex:1;text-align:center}
+.bar{height:18px;background:#1e293b;border-radius:20px;overflow:hidden;margin:10px 0}
+.fill{height:100%;width:100%;background:#22c55e;transition:1s linear}
+.question{font-size:1.25rem;margin:20px 0}
+.option{width:100%;padding:14px;margin:8px 0;border:none;border-radius:10px;cursor:pointer;background:#fff;color:#111;transition:.2s}
+.option:hover{transform:translateY(-2px)}
+.correct{background:#22c55e!important;color:#fff!important}
+.wrong{background:#ef4444!important;color:#fff!important}
+button{padding:12px 20px;border:none;border-radius:10px;cursor:pointer;background:#fff;color:#111;font-weight:600}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;background:#fff;color:#000;margin-top:10px}
+th,td{border:1px solid #ddd;padding:8px;text-align:center}
+th{background:#2563eb;color:#fff}
+.badge{display:inline-block;background:#ffffff22;padding:4px 8px;border-radius:8px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Praxis Discursiva Challenge Ultimate</h1>
+<p class="subtitle">Comunicación, informática, seguridad y atención al cliente</p>
+
+<div id="start">
+<center>
+<p>Responde tantas preguntas como puedas antes de que termine el tiempo.</p><br>
+<button onclick="startGame()">Comenzar</button>
+</center>
+</div>
+
+<div id="game" class="hidden">
+<div class="top">
+<div class="card">Puntos: <span id="score">0</span></div>
+<div class="card">Tiempo: <span id="time">60</span>s</div>
+<div class="card">Racha: <span id="streak">0</span></div>
+<div class="card">Nivel: <span id="level">1</span></div>
+</div>
+
+<div class="bar"><div id="barfill" class="fill"></div></div>
+<div id="question" class="question"></div>
+<div id="options"></div>
+<div id="feedback"></div>
+</div>
+
+<div id="end" class="hidden">
+<h2>🏁 Resultado Final</h2>
+<p id="stats"></p><br>
+<button onclick="location.reload()">Jugar otra vez</button>
+</div>
+
+<hr style="margin:20px 0">
+<h2>🏆 Ranking Top 10</h2>
+<p>Participantes: <span id="participants">0</span></p>
+<table>
+<thead><tr><th>Pos.</th><th>Nombre</th><th>Puntos</th></tr></thead>
+<tbody id="ranking"></tbody>
+</table>
+<br>
+<button onclick="resetRanking()">Reiniciar Ranking</button>
+</div>
+
+<script>
+const banco=[
+// --- CATEGORÍA: PROFESIONAL (13 preguntas) ---
+{t:"Profesional",q:"¿Cuál es la comunicación profesional?",a:"Se presenta una falla en el equipo de cómputo.",w:["La compu se dañó.","No sirve.","Está mala."]},
+{t:"Profesional",q:"¿Cuál es la mejor redacción?",a:"La conexión presenta inestabilidad que afecta los servicios.",w:["El internet está malo.","Está fatal.","No sirve."]},
+{t:"Profesional",q:"¿Cuál es la mejor forma de informar un retraso?",a:"El proyecto presenta una demora y estamos trabajando para corregirla.",w:["Vamos tarde.","Se complicó.","No hemos podido."]},
+{t:"Profesional",q:"¿Cuál es una redacción profesional?",a:"Se realizó la actualización de acuerdo con lo planificado.",w:["Ya quedó listo.","Se hizo.","Todo bien."]},
+{t:"Profesional",q:"¿Cómo se debe solicitar asistencia técnica internamente?",a:"Agradezco su apoyo en la revisión del siguiente error de sistema.",w:["Ayuda, esto no sirve.","Soporte urgente que se cayó el sistema.","Revisen rápido."]},
+{t:"Profesional",q:"¿Cuál expresa mejor una disconformidad de manera asertiva?",a:"Considero que requerimos evaluar alternativas para este procedimiento.",w:["Ese método no sirve para nada.","Está mal hecho el plan.","No me gusta cómo trabajan."]},
+{t:"Profesional",q:"¿Cuál es la mejor opción para agendar una reunión técnica?",a:"Agradezco me confirmen su disponibilidad para la sesión de alineación.",w:["Hay que reunirnos mañana sin falta.","¿Quién puede hablar un rato de soporte?","Conéctense cuando puedan para revisar."]},
+{t:"Profesional",q:"¿Cómo se debe delegar una tarea formalmente?",a:"Asigno la validación de este módulo conforme al cronograma establecido.",w:["Hazte cargo de esto cuando tengas tiempo.","Te toca revisar el sistema porque yo no puedo.","Ahí te dejé la tarea pendiente."]},
+{t:"Profesional",q:"¿Cuál es la forma correcta de admitir un error operativo?",a:"Identificamos una desviación en el proceso y ya aplicamos la corrección.",w:["Fue culpa del sistema operativo.","Metimos la pata pero ya está solucionado.","Alguien se equivocó en la configuración."]},
+{t:"Profesional",q:"¿Cuál redacción demuestra proactividad profesional?",a:"Sugerimos implementar esta mejora para optimizar los tiempos de carga.",w:["El sistema está lento, a ver si lo arreglan.","Deberían cambiar ese design viejo.","Ojalá el programa fuera más rápido."]},
+{t:"Profesional",q:"¿Cómo solicitar la firma de un contrato o documento corporativo?",a:"Agradecemos su valioso apoyo con la firma del documento adjunto.",w:["Fírmame esto rápido.","Necesito la firma para ya.","Adjunto papel para que firme."]},
+{t:"Profesional",q:"¿Cuál es la mejor manera de justificar una ausencia laboral?",a:"Por motivos de fuerza mayor, no podré asistir a la jornada de hoy.",w:["No voy a ir a trabajar hoy porque me siento mal.","Me surgió un imprevisto, ahí nos vemos mañana.","Hoy no cuenten conmigo."]},
+{t:"Profesional",q:"¿Cómo notificar la culminación de un proyecto con éxito?",a:"Nos complace informar que la implementación concluyó con éxito.",w:["Ya terminamos todo el trabajo por fin.","Quedo listo el sistema, ya cerramos eso.","Todo bien con el proyecto, terminamos."]},
+
+// --- CATEGORÍA: CLIENTE (13 preguntas) ---
+{t:"Cliente",q:"¿Cuál es la mejor respuesta a un cliente?",a:"Estamos revisando el caso y le mantendremos informado.",w:["Espere.","No sabemos.","Estamos viendo."]},
+{t:"Cliente",q:"¿Cuál es la respuesta más profesional?",a:"Agradecemos sus comentarios para mejorar el servicio.",w:["Ok.","Entendido.","Tomaremos nota."]},
+{t:"Cliente",q:"¿Qué respuesta genera confianza?",a:"Estamos trabajando en una solución y le informaremos los avances.",w:["No sabemos.","Espere.","Revise luego."]},
+{t:"Cliente",q:"¿Cuál demuestra cortesía?",a:"Gracias por comunicarse con nosotros.",w:["Ok.","Entendido.","Ya."]},
+{t:"Cliente",q:"¿Como manejar la molestia de un usuario por un servicio caído?",a:"Lamentamos los inconvenientes; nuestro equipo técnico ya está solventándolo.",w:["Es culpa del proveedor de internet.","A todos se les cayó, tenga paciencia.","Ya va, estamos ocupados."]},
+{t:"Cliente",q:"¿Qué alternativa evita un 'No se puede' rotundo?",a:"En este momento no disponemos de esa opción, pero puedo ofrecerle esta alternativa.",w:["Eso no se puede hacer aquí.","Imposible, el sistema no lo permite.","No hacemos ese tipo de servicios."]},
+{t:"Cliente",q:"¿Cómo saludar a un cliente que ingresa al canal de soporte?",a:"Estimado usuario, ¿en qué podemos asistirle el día de hoy?",w:["Buenas, dígame qué le pasa.","Hola, ¿cuál es su problema con el sistema?","¿Qué necesita de soporte?"]},
+{t:"Cliente",q:"¿Qué decir si la solución del caso tomará más tiempo del previsto?",a:"Para asegurar la correcta resolución, el proceso requerirá un tiempo adicional.",w:["Esto va para largo, espérese.","El técnico se complicó y tardará más.","No sé cuánto falte, el caso está difícil."]},
+{t:"Cliente",q:"¿Cuál es la mejor forma de solicitar datos confidenciales para validación?",a:"Para su seguridad, requerimos confirmar algunos datos de su registro.",w:["Páseme su contraseña y usuario para revisar.","Deme sus datos rápido para avanzar.","Necesito sus claves de acceso."]},
+{t:"Cliente",q:"¿Cómo cerrar una sesión de atención al cliente de forma excelente?",a:"¿Existe alguna otra solicitud en la que pueda asistirle antes de finalizar?",w:["Eso sería todo de mi parte, chao.","Si no hay más nada, cerramos el chat.","Listo su caso, que pase buen día."]},
+{t:"Cliente",q:"¿Qué responder si un cliente pide un descuento no autorizado?",a:"Evaluaremos su solicitud con el departamento encargado para verificar opciones.",w:["No damos descuentos a nadie.","Aquí los precios son fijos y no se cambian.","Imposible hacer rebajas en este servicio."]},
+{t:"Cliente",q:"¿Cómo reanudar la comunicación ante insultos de un usuario molesto?",a:"Comprendo su frustración, mantengamos el respeto mutuo para ayudarle.",w:["No me hable así que yo no tengo la culpa.","Si me sigue gritando le voy a colgar la llamada.","Usted no tiene derecho a tratarme mal."]},
+{t:"Cliente",q:"¿Cuál es la mejor manera de transferir a un cliente con un especialista?",a:"Le transferiré con el área especialista para brindarle una mejor atención.",w:["Le paso a otra área a ver si ellos saben.","Espere en línea que ese no es mi trabajo.","Le toca hablar con otra persona, un momento."]},
+
+// --- CATEGORÍA: CORREO (13 preguntas) ---
+{t:"Correo",q:"¿Cuál es el mejor inicio para un correo corporativo?",a:"Estimado cliente, esperamos que se encuentre bien.",w:["Hola.","Buenas.","Qué tal."]},
+{t:"Correo",q:"¿Cuál es el mejor cierre?",a:"Quedo atento a cualquier consulta adicional.",w:["Avísame.","Saludos.","Eso es todo."]},
+{t:"Correo",q:"¿Cuál es un asunto adecuado?",a:"Seguimiento de solicitud de soporte",w:["Soporte","Urgente","Consulta"]},
+{t:"Correo",q:"¿Cuál es una despedida profesional?",a:"Quedo atento a cualquier información adicional.",w:["Saludos.","Chao.","Nos vemos."]},
+{t:"Correo",q:"¿Cuál es un asunto claro para enviar un informe mensual?",a:"Envío de Informe de Gestión - Mayo 2026",w:["Informe","Aquí va el documento","Reporte nuevo de este mes"]},
+{t:"Correo",q:"¿Cómo indicar correctamente que se anexa un archivo?",a:"Adjunto al presente correo comparto el archivo solicitado.",w:["Ahí les dejé pegado el archivo.","Miren abajo el documento que me pidieron.","Va el archivo adentro del correo."]},
+{t:"Correo",q:"¿Cuál es el asunto ideal para reportar un incidente crítico?",a:"Incidente Crítico - Caída del Servidor de Base de Datos",w:["PROBLEMA GRAVE","No funciona la base de datos","URGENTE REVISAR ESTO"]},
+{t:"Correo",q:"¿Cómo responder a un correo masivo de felicitaciones corporativas?",a:"Agradezco el reconocimiento y felicito a todo el equipo por el logro.",w:["Gracias a todos, somos los mejores.","Qué bueno que ganamos, saludos.","Felicidades gruesas para el equipo."]},
+{t:"Correo",q:"¿Cuál es el inicio adecuado para un correo de queja formal a un proveedor?",a:"Por medio de la presente, manifestamos nuestra disconformidad con el servicio.",w:["Estamos muy molestos con el internet que nos venden.","Este correo es para decir que el servicio es malísimo.","Hola, escribo porque su soporte no sirve."]},
+{t:"Correo",q:"¿Qué frase usar para solicitar una respuesta rápida sin sonar grosero?",a:"Agradecemos de antemano su pronta respuesta debido al alcance del proyecto.",w:["Respondan rápido que estamos apurados.","Necesito esto para ayer sin falta.","Contesten el correo lo antes posible."]},
+{t:"Correo",q:"¿Cuál es la estructura correcta de firmas de correo?",a:"Nombre, Cargo, Departamento, Teléfono y Enlace de la Empresa.",w:["Solo el nombre completo.","Nombre y un saludo informal.","Cargo, iniciales y un emoji."]},
+{t:"Correo",q:"¿Cómo reanudar una conversación por correo tras varios días de silencio?",a:"Hacemos seguimiento a los puntos tratados en nuestro último contacto.",w:["¿Al fin qué pasó con lo que hablamos?","Nadie me respondió el correo anterior.","Hola de nuevo, sigo esperando respuesta."]},
+{t:"Correo",q:"¿Cuál es un asunto adecuado para solicitar vacaciones?",a:"Solicitud de Periodo Vacacional - [Nombre del Empleado]",w:["Días libres","Mis vacaciones anuales","Necesito tiempo libre"]},
+
+// --- CATEGORÍA: ORTOGRAFÍA (13 preguntas) ---
+{t:"Ortografía",q:"¿Cuál está correctamente escrita?",a:"La información fue actualizada correctamente.",w:["La informacion fue actualizada correctamente.","La información fue actualisada correctamente.","La informacion fue actualisada correctamente."]},
+{t:"Ortografía",q:"¿Cuál palabra está bien escrita?",a:"Mantenimiento",w:["Mantemiento","Mantenimineto","Manteniemiento"]},
+{t:"Ortografía",q:"¿Cuál palabra está correctamente escrita?",a:"Disponibilidad",w:["Disponivilidad","Disponibilidadd","Dispinibilidad"]},
+{t:"Ortografía",q:"¿Cuál palabra está correctamente escrita?",a:"Implementación",w:["Inplementación","Implementasion","Implentación"]},
+{t:"Ortografía",q:"¿Cuál opción emplea correctamente los signos?",a:"¿Cuándo se enviará el reporte técnico?",w:["Cuando se enviara el reporte tecnico?","¿Cuando se enviará el reporte técnico.","Cúando se enviará el reporte técnico?"]},
+{t:"Ortografía",q:"¿Cuál palabra lleva tilde correctamente?",a:"Eficacia",w:["Eficácia","Efícacia","Eficaciá"]},
+{t:"Ortografía",q:"¿Cuál oración respeta el uso de las mayúsculas?",a:"El Administrador de Base de Datos configuró el servidor el pasado lunes.",w:["El administrador de base de datos configuró el Servidor el pasado Lunes.","El Administrador De Base De Datos configuró el servidor el pasado lunes.","El administrador de base de datos configuro el servidor el pasado Lunes."]},
+{t:"Ortografía",q:"¿Cuál es la grafía correcta de la siguiente palabra técnica?",a:"Ciberseguridad",w:["Cyberseguridad","Civerseguridad","Cyber-seguridad"]},
+{t:"Ortografía",q:"¿Cuál opción está bien escrita?",a:"A través del sistema se gestionan los tickets.",w:["Atraves del sistema se gestionan los tickets.","A través del sistema se jestionan los tiquets.","A traves del sistema se gestionan los tickets."]},
+{t:"Ortografía",q:"¿Cuál de las opciones no contiene errores?",a:"Por favor, introduzca los parámetros correctos.",w:["Por favor, introdusca los parametros correctos.","Porfavor, introduzca los parámetros correctos.","Por favor introduzca los parametros correctos."]},
+{t:"Ortografía",q:"¿Cuál palabra técnica está escrita de forma correcta?",a:"Página web",w:["Pagina web","Pajina web","Página weeb"]},
+{t:"Ortografía",q:"¿Cuál de las siguientes formas es correcta?",a:"Hubo varios inconvenientes en la plataforma.",w:["Hubieron varios inconvenientes en la plataforma.","Uvieron varios inconvenientes en la plataforma.","Hubo varios inconbenientes en la plataforma."]},
+{t:"Ortografía",q:"¿Cuál palabra compuesta está bien escrita?",a:"Infor-mática (con guion al final de línea) o Informática",w:["Informatica","Informàtica","Inphormática"]},
+
+// --- CATEGORÍA: SEGURIDAD (13 preguntas) ---
+{t:"Seguridad",q:"¿Cuál es una buena práctica?",a:"Utilizar contraseñas únicas y complejas.",w:["Compartir contraseñas.","Usar la misma contraseña.","Pegarlas en el monitor."]},
+{t:"Seguridad",q:"¿Qué debes hacer ante un correo sospechoso?",a:"Reportarlo y evitar abrir enlaces.",w:["Abrirlo para verificar.","Responder al remitente.","Compartirlo."]},
+{t:"Seguridad",q:"¿Qué ayuda a proteger información sensible?",a:"Limitar el acceso a usuarios autorizados.",w:["Compartir usuarios.","Usar claves simples.","Desactivar controles."]},
+{t:"Seguridad",q:"¿Qué es una contraseña segura?",a:"Una combinación larga y difícil de adivinar.",w:["123456","password","fecha de nacimiento"]},
+{t:"Seguridad",q:"¿Qué se debe hacer al retirarse de la estación de trabajo?",a:"Bloquear la sesión del sistema operativo.",w:["Dejar la pantalla encendida.","Apagar el monitor únicamente.","Dejar descargas activas sin supervisión."]},
+{t:"Seguridad",q:"¿Cuál es un riesgo de conectar un USB desconocido?",a:"Infección por malware o robo de datos.",w:["Baja de velocidad de la pantalla.","Que se queme el puerto inmediatamente.","Pérdida de la garantía del mouse."]},
+{t:"Seguridad",q:"¿Qué es el phishing?",a:"Un intento de suplantación de identidad para robar datos bancarios o claves.",w:["Un software de optimización de memoria.","Un protocolo físico de conexión por cable.","Una técnica de limpieza física de servidores."]},
+{t:"Seguridad",q:"¿Cuál es el mejor método para deshacerse de documentos impresos confidenciales?",a:"Destruirlos en una trituradora de papel.",w:["Arrojarlos intactos a la papelera común.","Dejarlos en el almacén de reciclaje abierto.","Rayarlos un poco con bolígrafo."]},
+{t:"Seguridad",q:"¿Cada cuánto tiempo se recomienda cambiar contraseñas críticas?",a:"Conforme a las políticas internas de la organización o tras sospecha de brecha.",w:["Nunca, si la contraseña es difícil de adivinar.","Todos los días antes de iniciar jornada.","Cada dos años exactos."]},
+{t:"Seguridad",q:"¿Qué es el malware?",a:"Cualquier programa malicioso diseñado para dañar o infiltrar un sistema.",w:["Un componente de hardware dañado de fábrica.","Un error involuntario de código informático.","Una herramienta oficial de administración de redes."]},
+{t:"Seguridad",q:"¿Qué significa cifrar un archivo?",a:"Alterar su contenido mediante algoritmos para que solo personal autorizado lo lea.",w:["Comprimirlo para que ocupe menos espacio en disco.","Eliminarlo de forma permanente del sistema operativo.","Convertirlo en un formato ejecutable autoinstalable."]},
+{t:"Seguridad",q:"¿Qué tipo de red inalámbrica es más insegura?",a:"Una red Wi-Fi pública sin contraseña de acceso.",w:["La red Wi-Fi corporativa con cifrado WPA3.","La red compartida por el teléfono celular personal.","Una red oculta que requiere autenticación."]},
+{t:"Seguridad",q:"¿Qué es una vulnerabilidad en informática?",a:"Un fallo o debilidad en el software que puede ser explotado por atacantes.",w:["Una caída de luz imprevista en las instalaciones.","Un usuario que olvida su contraseña con frecuencia.","Un disco duro viejo que hace ruidos raros."]},
+
+// --- CATEGORÍA: INFORMÁTICA (13 preguntas) ---
+{t:"Informática",q:"¿Qué significa CPU?",a:"Unidad Central de Procesamiento",w:["Centro Principal de Usuario","Control Principal Universal","Procesador de Conexión"]},
+{t:"Informática",q:"¿Qué significa RAM?",a:"Memoria de Acceso Aleatorio",w:["Registro Automático de Memoria","Memoria de Archivo Rápido","Recurso de Administración"]},
+{t:"Informática",q:"¿Qué dispositivo conecta una red local a Internet?",a:"Router",w:["Monitor","Teclado","Escáner"]},
+{t:"Informática",q:"¿Qué significa USB?",a:"Bus Universal en Serie",w:["Unidad Serial Básica","Bus de Sistema Universal","Unidad de Soporte Básico"]},
+{t:"Informática",q:"¿Qué función cumple principalmente un sistema operativo?",a:"Gestionar los recursos de hardware y software.",w:["Navegar por páginas web únicamente.","Limpiar el polvo de los componentes.","Aumentar la velocidad del internet."]},
+{t:"Informática",q:"¿Qué comando se usa comúnmente para copiar texto?",a:"Ctrl + C",w:["Ctrl + V","Ctrl + X","Ctrl + Z"]},
+{t:"Informática",q:"¿Qué componente almacena los datos de forma permanente en una PC?",a:"Disco Duro o SSD",w:["Memoria RAM","Procesador (CPU)","Tarjeta de Video (GPU)"]},
+{t:"Informática",q:"¿Qué es una dirección IP?",a:"Un identificador numérico único de un dispositivo en una red.",w:["El nombre comercial de la tarjeta madre.","Un código postal para enviar servidores físicos.","La clave secreta de administración inalámbrica."]},
+{t:"Informática",q:"¿Qué significa que un sistema esté 'en la nube'?",a:"Que los servicios y servidores se ejecutan a través de Internet de forma remota.",w:["Que los equipos físicos están suspendidos en el techo.","Que funciona únicamente cuando el clima está despejado.","Que la información se transmite por ondas de radio de alta frecuencia."]},
+{t:"Informática",q:"¿Qué es un navegador web?",a:"Un software diseñado para acceder y visualizar páginas de Internet.",w:["La empresa que vende las conexiones de fibra óptica.","Un cable físico de transmisión de datos a gran velocidad.","El buscador que viene integrado en las impresoras nuevas."]},
+{t:"Informática",q:"¿Qué extensión corresponde comúnmente a un archivo ejecutable en Windows?",a:".exe",w:[".txt",".pdf",".mp3"]},
+{t:"Informática",q:"¿Cuál es la función principal de un servidor de Base de Datos?",a:"Almacenar, organizar y proveer acceso estructurado a los datos de la empresa.",w:["Hacer copias impresas automáticas de los informes.","Distribuir la señal Wi-Fi por las oficinas centrales.","Controlar la velocidad física de los ventiladores."]},
+{t:"Informática",q:"¿Qué significa 'formatear' un almacenamiento?",a:"Eliminar los datos existentes y preparar la unidad para un nuevo sistema de archivos.",w:["Cambiar el color físico de la carcasa externa.","Aumentar mágicamente la capacidad original del disco.","Limpiar la pantalla del equipo con líquido especial."]},
+
+// --- CATEGORÍA: CLARIDAD (12 preguntas) ---
+{t:"Claridad",q:"¿Cuál es más fácil de entender?",a:"El programa tuvo un error y se cerró.",w:["Excepción no controlada.","Incidencia de ejecución.","Anomalía lógica."]},
+{t:"Claridad",q:"¿Cuál mensaje es más claro?",a:"Debe iniciar sesión para continuar.",w:["Autenticación requerida.","Validación pendiente.","Acceso restringido."]},
+{t:"Claridad",q:"¿Cuál mensaje es más claro?",a:"El archivo no pudo abrirse porque está dañado.",w:["Error de lectura.","Fallo de acceso.","Incidencia detectada."]},
+{t:"Claridad",q:"¿Cuál instrucción es más clara?",a:"Haga clic en Guardar para continuar.",w:["Guardar requerido.","Acción pendiente.","Proceso incompleto."]},
+{t:"Claridad",q:"¿Qué alternativa es más directa y comprensible?",a:"Por favor, reinicie el equipo e intente de nuevo.",w:["Proceda con el ciclo de energía del terminal.","Efectúe un reboot del sistema base.","Apague y prenda el aparato rápido."]},
+//{t:"Claridad",q:"¿Cuál mensaje de error en un formulario es más claro?",a:"El campo de correo electrónico debe incluir un '@'.",w:["Sintaxis de cadena de texto inválida en el nodo de contacto.","Error 404 en el campo secundario.","Formato incorrecto en la casilla 3."]},
+{t:"Claridad",q:"¿Cuál notificación es mejor para avisar un mantenimiento de red?",a:"El servicio de internet se interrumpirá el sábado de 2:00 a.m. a 4:00 a.m.",w:["Ejecutaremos tareas de optimización de infraestructura de enlaces el fin de semana.","Habrá un apagón lógico de servicios próximamente, tomen previsiones.","Mantenimiento general programado de telecomunicaciones corporativas."]},
+{t:"Claridad",q:"¿Cuál instrucción reduce la confusión del usuario final?",a:"Escriba su número de cédula sin puntos ni guiones.",w:["Ingrese la identificación aplicando la normativa de omitir caracteres especiales puntuales.","Ponga su documento de identidad de forma normal y plana.","Introduzca el ID omitiendo puntuaciones estándar."]},
+{t:"Claridad",q:"¿Cuál de estos textos informativos es más limpio?",a:"Nuestra oficina permanecerá cerrada los días festivos.",w:["Con motivo del asueto nacional decretado, la locación física suspenderá operaciones ordinarias.","No abriremos porque es feriado oficial.","La atención presencial estará bloqueada por festividades estructurales."]},
+{t:"Claridad",q:"¿Cómo indicar que la contraseña es incorrecta de forma simple?",a:"La contraseña ingresada no es válida. Inténtelo de nuevo.",w:["Error criptográfico: el hash no coincide con el registro original.","Validación de seguridad fallida en el parámetro de acceso numérico.","Clave incorrecta, ponga la que es."]},
+{t:"Claridad",q:"¿Cuál es el mejor texto para un botón de confirmación de pago?",a:"Confirmar y Pagar",w:["Proceder con la transacción monetaria final","Ok","Ejecutar la validación del carrito de compras"]},
+{t:"Claridad",q:"¿Cuál aviso de actualización de software es más amigable?",a:"Hay una nueva versión disponible para mejorar el rendimiento de la app.",w:["Parche crítico compilado 1.4.2 listo para despliegue masivo.","Se requiere actualización lógica del cliente ligero de software.","Descargue la nueva versión si quiere que funcione mejor."]},
+
+// --- CATEGORÍA: INFORME (12 preguntas) ---
+{t:"Informe",q:"¿Cuál es la mejor redacción para un informe?",a:"Se observó una disminución del rendimiento durante las pruebas.",w:["Iba mal.","Funcionó lento.","No respondió bien."]},
+{t:"Informe",q:"¿Cuál es más objetiva?",a:"Se registraron 15 incidencias durante la semana.",w:["Hubo muchos problemas.","Fue una mala semana.","Todo salió mal."]},
+{t:"Informe",q:"¿Cuál es una observación objetiva?",a:"Se registró un aumento del 10% en el rendimiento.",w:["Mejoró bastante.","Funcionó mucho mejor.","Fue excelente."]},
+{t:"Informe",q:"¿Cuál es adecuada para un informe?",a:"No se detectaron errores durante las pruebas.",w:["Todo salió perfecto.","Funcionó genial.","Ningún problema."]},
+{t:"Informe",q:"¿Cuál frase mantiene un tono técnico y formal?",a:"Los resultados obtenidos concuerdan con los parámetros esperados.",w:["Salió tal cual queríamos.","Los números están bien bonitos.","No hubo sorpresas raras."]},
+{t:"Informe",q:"¿Cómo describir un aumento imprevisto en los costos?",a:"Se evidenció una desviación presupuestaria al cierre del trimestre.",w:["Gastamos mucho más dinero de lo que pensábamos.","La contabilidad salió fatal este mes.","Nos costó carísimo el mantenimiento del servidor."]},
+{t:"Informe",q:"¿Cuál es la redacción ideal para sugerir una compra técnica?",a:"Se recomienda la adquisición de nuevos equipos para evitar obsolescencia.",w:["Hay que comprar computadoras nuevas porque las viejas dan lástima.","Sugerimos gastar en hardware moderno para estar a la moda.","Compren mejores equipos o el sistema fallará pronto."]},
+{t:"Informe",q:"¿Cómo redactar de manera formal la pérdida de un cliente importante?",a:"La empresa finalizó relaciones comerciales con la cuenta asignada.",w:["El cliente grande nos dejó porque el servicio falló.","Perdimos la cuenta importante de la semana pasada.","Nos cancelaron el contrato principal, qué mala suerte."]},
+{t:"Informe",q:"¿Cuál frase expresa mejor el avance de un proyecto?",a:"El desarrollo del módulo presenta un avance del 75% conforme al cronograma.",w:["Ya casi terminamos todo el código de programación.","Fuimos bastante avanzados esta semana en las tareas.","El sistema está casi listo, falta poco."]},
+{t:"Informe",q:"¿Cómo reportar formalmente que faltó personal a una jornada?",a:"Se registró un ausentismo laboral del 20% en el equipo operativo.",w:["Faltaron bastantes trabajadores el día de hoy a la oficina.","Mucha gente no vino a trabajar y por eso nos retrasamos.","Hubo poca asistencia del personal operativo."]},
+{t:"Informe",q:"¿Cuál es la forma objetiva de concluir una auditoría de inventario?",a:"El inventario físico final coincidió en su totalidad con los registros digitales.",w:["Contamos todo y por suerte nada se perdió en el almacén.","El inventario salió perfecto, todo está en su lugar.","No faltaron cosas, el control digital funcionó bien."]},
+{t:"Informe",q:"¿Cómo indicar formalmente que un plan técnico debe cambiarse?",a:"La evaluación de las pruebas piloto sugiere la reestructuración del plan original.",w:["El plan viejo no funcionó en los test, hay que hacer otro.","Vamos a cambiar todo el diseño porque salió mal.","Toca modificar la estrategia técnica debido a problemas estructurales."]},
+
+// --- CATEGORÍA: DIFÍCIL (Doble puntaje - 13 preguntas) ---
+{t:"Difícil",d:true,q:"¿Qué práctica reduce el riesgo de phishing?",a:"Verificar el dominio del remitente.",w:["Responder rápido.","Descargar adjuntos.","Ignorar advertencias."]},
+{t:"Difícil",d:true,q:"¿Qué es la autenticación multifactor?",a:"Uso de dos o más métodos de verificación.",w:["Cambiar contraseña cada año.","Tener dos usuarios.","Usar dos navegadores."]},
+{t:"Difícil",d:true,q:"¿Qué protocolo garantiza que la navegación web esté cifrada?",a:"HTTPS",w:["HTTP","FTP","SMTP"]},
+{t:"Difícil",d:true,q:"¿Qué acción mitiga la pérdida total de datos ante un ataque de ransomware?",a:"Contar con respaldos (backups) externos y aislados periódicos.",w:["Instalar un segundo sistema operativo.","Pagar inmediatamente el rescate solicitado.","Cambiar la dirección IP del router."]},
+{t:"Difícil",d:true,q:"En ingeniería social, ¿en qué consiste el 'Pretexting'?",a:"Crear un escenario falso complejo para engañar a la víctima y obtener datos.",w:["Enviar virus a través de un message de texto corto.","Espiar físicamente la pantalla de un usuario.","Saturar un servidor con tráfico falso."]},
+{t:"Difícil",d:true,q:"¿Qué es una inyección SQL (SQLi)?",a:"Una vulnerabilidad que permite ejecutar sentencias de base de datos no autorizadas a través de un formulario.",w:["Un método físico para inyectar energía a los discos de estado sólido.","Un software antivirus especializado en bases de datos relacionales.","Una técnica de compresión de tablas lógicas en el servidor."]},
+{t:"Difícil",d:true,q:"¿Qué capa del modelo OSI se encarga del enrutamiento lógico de los paquetes de datos?",a:"Capa de Red (Capa 3)",w:["Capa Física (Capa 1)","Capa de Enlace de Datos (Capa 2)","Capa de Transporte (Capa 4)"]},
+{t:"Difícil",d:true,q:"¿Cuál es la función principal de un firewall (cortafuegos)?",a:"Filtrar y controlar el tráfico de red entrante y saliente basado en reglas de seguridad.",w:["Aumentar el ancho de banda físico contratado con el proveedor.","Evitar que el hardware del servidor sufra sobrecalentamiento.","Formatear automáticamente discos duros con virus detectados."]},
+{t:"Difícil",d:true,q:"¿Qué diferencia clave hay entre codificar (encoding) y cifrar (encrypting)?",a:"Codificar cambia el formato de los datos; cifrar oculta su significado mediante llaves.",w:["Cifrar es solo para números; codificar es para letras y palabras.","Codificar destruye el archivo; cifrar lo duplica para mayor seguridad.","No hay diferencia, ambos términos significan exactamente lo mismo."]},
+{t:"Difícil",d:true,q:"¿Qué tipo de respaldo copia únicamente los archivos modificados desde el último respaldo completo?",a:"Respaldo Diferencial",w:["Respaldo Incremental puro","Respaldo Completo sintético","Respaldo Espejo en tiempo real"]},
+{t:"Difícil",d:true,q:"¿En qué consiste un ataque de Denegación de Servicio Distribuido (DDoS)?",a:"Saturar un servidor con tráfico malicioso proveniente de múltiples fuentes (botnets).",w:["Robar la contraseña del administrador del router principal mediante fuerza bruta.","Cortar físicamente los cables de fibra óptica del centro de datos.","Modificar los archivos de configuración del sistema operativo de forma remota."]},
+{t:"Difícil",d:true,q:"¿Qué es un exploit?",a:"Un fragmento de software o comando que aprovecha una vulnerabilidad para causar un comportamiento no deseado.",w:["Un empleado técnico que trabaja horas extra sin recibir remuneración.","Un procesador que corre a la máxima velocidad permitida por el fabricante.","Una herramienta oficial de Windows para desfragmentar discos."]},
+{t:"Difícil",d:true,q:"¿Qué protocolo se utiliza comúnmente para la asignación automática de direcciones IP en una red?",a:"DHCP",w:["DNS","FTP","ICMP"]}
+];
+
+let score=0,streak=0,best=0,ok=0,bad=0,time=60,intv;
+let preguntasDisponibles=[];
+let actual;
+let inicioPregunta=0;
+
+function iniciarPreguntas(){
+ preguntasDisponibles=[...banco];
+}
+
+function randomQuestion(){
+ if(preguntasDisponibles.length===0) iniciarPreguntas();
+
+ const idx=Math.floor(Math.random()*preguntasDisponibles.length);
+ actual=preguntasDisponibles[idx];
+ preguntasDisponibles.splice(idx,1);
+
+ document.getElementById("question").innerHTML=`<div class="badge">${actual.t}</div><br>${actual.q}`;
+
+ let ops=[actual.a,...actual.w].sort(()=>Math.random()-0.5);
+
+ document.getElementById("options").innerHTML=ops.map(op=>
+ `<button class='option' onclick='answer(this, ${JSON.stringify(op)}, ${JSON.stringify(actual.a)})'>${op}</button>`
+ ).join("");
+
+ inicioPregunta=Date.now();
+}
+
+function startGame(){
+ iniciarPreguntas();
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ randomQuestion();
+
+ intv=setInterval(()=>{
+  time--;
+  document.getElementById("time").textContent=time;
+  document.getElementById("barfill").style.width=(time/60*100)+"%";
+  if(time<=0) finish();
+ },1000);
+}
+
+function answer(btn,sel,correct){
+ const botones=document.querySelectorAll(".option");
+ botones.forEach(b=>b.disabled=true);
+
+ if(sel===correct){
+   let pts=actual.d?20:10;
+
+   if((Date.now()-inicioPregunta)/1000<2) pts+=5;
+
+   score+=pts;
+   ok++;
+   streak++;
+
+   if(streak===3) score+=5;
+   if(streak===5) score+=10;
+   if(streak===8) score+=20;
+   if(streak===10) score+=30;
+   if(streak===15) score+=50;
+
+   best=Math.max(best,streak);
+   btn.classList.add("correct");
+ }else{
+   bad++;
+   streak=0;
+   btn.classList.add("wrong");
+
+   botones.forEach(b=>{
+      if(b.textContent===correct) b.classList.add("correct");
+   });
+ }
+
+ document.getElementById("score").textContent=score;
+ document.getElementById("streak").textContent=streak;
+ document.getElementById("level").textContent=Math.floor(score/100)+1;
+
+ setTimeout(()=>{
+   if(time>0) randomQuestion();
+ },1000);
+}
+
+function finish(){
+ clearInterval(intv);
+
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("end").classList.remove("hidden");
+
+ let cert="Participante";
+ if(score>=700) cert="🏆 Leyenda de la Praxis";
+ else if(score>=500) cert="👑 Gran Maestro";
+ else if(score>=400) cert="🥇 Maestro";
+ else if(score>=300) cert="🥈 Experto";
+ else if(score>=200) cert="🥉 Especialista";
+ else if(score>=100) cert="🎖 Comunicador Técnico";
+
+ document.getElementById("stats").innerHTML=`
+ Puntos: ${score}<br>
+ Aciertos: ${ok}<br>
+ Errores: ${bad}<br>
+ Mejor racha: ${best}<br>
+ Certificado: ${cert}`;
+
+ saveScore();
+}
+
+function saveScore(){
+ let name=prompt("Nombre para el ranking:")||"Participante";
+ let r=JSON.parse(localStorage.getItem("rankingPraxis2")||"[]");
+ r.push({name,score});
+ r.sort((a,b)=>b.score-a.score);
+ localStorage.setItem("rankingPraxis2",JSON.stringify(r.slice(0,10)));
+ localStorage.setItem("participantsPraxis2",(parseInt(localStorage.getItem("participantsPraxis2")||0)+1));
+ loadRanking();
+}
+
+function loadRanking(){
+ let r=JSON.parse(localStorage.getItem("rankingPraxis2")||"[]");
+ let body=document.getElementById("ranking");
+ body.innerHTML="";
+ r.forEach((p,i)=>{
+   let pos=i==0?"🥇":i==1?"🥈":i==2?"🥉":(i+1);
+   body.innerHTML+=`<tr><td>${pos}</td><td>${p.name}</td><td>${p.score}</td></tr>`;
+ });
+ document.getElementById("participants").textContent=localStorage.getItem("participantsPraxis2")||0;
+}
+
+function resetRanking(){
+ if(confirm("¿Borrar ranking?")){
+  localStorage.removeItem("rankingPraxis2");
+  localStorage.removeItem("participantsPraxis2");
+  loadRanking();
+ }
+}
+
+loadRanking();
+</script>
+</body>
+</html>
