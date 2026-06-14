@@ -70,7 +70,29 @@ th{background:#2563eb;color:#fff}
 <!-- <button onclick="resetRanking()">Reiniciar Ranking</button> -->
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  push
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAe4VGFp3TB9WacO1MWsmRX7O5D0uZmuHU",
+  authDomain: "praxischallenge-c0529.firebaseapp.com",
+  databaseURL: "https://praxischallenge-c0529-default-rtdb.firebaseio.com",
+  projectId: "praxischallenge-c0529",
+  storageBucket: "praxischallenge-c0529.firebasestorage.app",
+  messagingSenderId: "1071778872238",
+  appId: "1:1071778872238:web:0ca92b1067da190012a63f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 const banco=[
 // --- CATEGORÍA: PROFESIONAL (13 preguntas) ---
 {t:"Profesional",q:"¿Cuál es la comunicación profesional?",a:"Se presenta una falla en el equipo de cómputo.",w:["La compu se dañó.","No sirve.","Está mala."]},
@@ -247,6 +269,8 @@ function startGame(){
  },1000);
 }
 
+window.startGame = startGame;
+
 function answer(btn,sel,correct){
  const botones=document.querySelectorAll(".option");
  botones.forEach(b=>b.disabled=true);
@@ -287,6 +311,8 @@ function answer(btn,sel,correct){
  },1000);
 }
 
+window.answer = answer;
+
 function finish(){
  clearInterval(intv);
 
@@ -311,34 +337,60 @@ function finish(){
  saveScore();
 }
 
-function saveScore(){
- let name=prompt("Nombre para el ranking:")||"Participante";
- let r=JSON.parse(localStorage.getItem("rankingPraxis2")||"[]");
- r.push({name,score});
- r.sort((a,b)=>b.score-a.score);
- localStorage.setItem("rankingPraxis2",JSON.stringify(r.slice(0,10)));
- localStorage.setItem("participantsPraxis2",(parseInt(localStorage.getItem("participantsPraxis2")||0)+1));
+
+async function saveScore(){
+ let name=prompt("Nombre para el ranking:") || "Participante";
+
+ await push(ref(db,"scores"),{
+   name:name,
+   score:score,
+   date:Date.now()
+ });
+
+ const snap = await get(ref(db,"participants"));
+ const total = snap.exists() ? snap.val() : 0;
+
+ await set(ref(db,"participants"), total + 1);
+
  loadRanking();
 }
 
-function loadRanking(){
- let r=JSON.parse(localStorage.getItem("rankingPraxis2")||"[]");
+
+
+async function loadRanking(){
+ const snap = await get(ref(db,"scores"));
+
+ let datos=[];
+ if(snap.exists()){
+   datos = Object.values(snap.val());
+ }
+
+ datos.sort((a,b)=>b.score-a.score);
+ datos = datos.slice(0,10);
+
  let body=document.getElementById("ranking");
  body.innerHTML="";
- r.forEach((p,i)=>{
+
+ datos.forEach((p,i)=>{
    let pos=i==0?"🥇":i==1?"🥈":i==2?"🥉":(i+1);
    body.innerHTML+=`<tr><td>${pos}</td><td>${p.name}</td><td>${p.score}</td></tr>`;
  });
- document.getElementById("participants").textContent=localStorage.getItem("participantsPraxis2")||0;
+
+ const participantes = await get(ref(db,"participants"));
+ document.getElementById("participants").textContent =
+   participantes.exists() ? participantes.val() : 0;
 }
 
-function resetRanking(){
+
+
+async function resetRanking(){
  if(confirm("¿Borrar ranking?")){
-  localStorage.removeItem("rankingPraxis2");
-  localStorage.removeItem("participantsPraxis2");
-  loadRanking();
+   await set(ref(db,"scores"), null);
+   await set(ref(db,"participants"), 0);
+   loadRanking();
  }
 }
+
 
 loadRanking();
 </script>
