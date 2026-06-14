@@ -25,13 +25,50 @@ table{width:100%;border-collapse:collapse;background:#fff;color:#000;margin-top:
 th,td{border:1px solid #ddd;padding:8px;text-align:center}
 th{background:#2563eb;color:#fff}
 .badge{display:inline-block;background:#ffffff22;padding:4px 8px;border-radius:8px;margin-bottom:8px}
+  
+  /* Estilos para la distribución de los logos institucionales */
+.header-logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.header-logos img {
+  height: 75px; /* Altura ideal para mantener legibilidad sin saturar */
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.header-logos img:hover {
+  transform: scale(1.05);
+}
+
+/* En pantallas pequeñas, los centra y los apila ordenadamente */
+@media (max-width: 600px) {
+  .header-logos {
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
 </style>
 </head>
 <body>
+HTML
+<body>
 <div class="container">
-<h1>Praxis Discursiva Challenge Ultimate</h1>
-<p class="subtitle">Comunicación, informática, seguridad y atención al cliente</p>
-
+  
+  <div class="header-logos">
+    <img src="Logo Programa de ciencias básicas.png" alt="Ciencias Básicas" class="logo-left">
+    <img src="Logo Unellez.png" alt="Unellez" class="logo-center">
+    <img src="Logo Ingeniería Informática.png" alt="Ingeniería Informática" class="logo-right">
+  </div>
+  <h1>Praxis Discursiva Challenge Ultimate</h1>
+  <p class="subtitle">Comunicación, informática, seguridad y atención al cliente</p>
 <div id="start">
 <center>
 <p>Responde tantas preguntas como puedas antes de que termine el tiempo.</p><br>
